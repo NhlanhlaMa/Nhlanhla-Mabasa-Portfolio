@@ -221,7 +221,7 @@ footer {
 
 /* Ensure the hero text stays aligned left for a modern layout */
 .hero-content {
-    text-align: center; 
+    text-align: left; 
     max-width: 900px;
     width: 100%;
 }
