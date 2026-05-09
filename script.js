@@ -54,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         clearInterval(carouselInterval);
 
-        // 1. URL-encode the title to handle spaces properly for GitHub Pages
         const encodedTitle = encodeURIComponent(data.title);
         const folderPath = `images/${encodedTitle}`;
         
@@ -62,60 +61,66 @@ document.addEventListener('DOMContentLoaded', () => {
         const extensions = ['png', 'jpg', 'jpeg', 'webp'];
         const imageCheckPromises = [];
 
-        // 2. Clear previous content and show a subtle loading state
+        // Loading state
         modalBody.innerHTML = `
             <h2>${data.title}</h2>
             <p style="color: #94a3b8; font-size: 0.95rem;">${data.desc}</p>
             <div class="image-carousel" style="display: flex; align-items: center; justify-content: center;">
-                <span style="color: #475569;">Loading preview...</span>
+                <span style="color: #475569;">Preparing preview...</span>
             </div>
         `;
 
         modal.style.display = "block";
         document.body.style.overflow = "hidden";
 
-        // 3. Helper function to check if an image actually exists
         const checkImage = (src) => {
             return new Promise((resolve) => {
                 const img = new Image();
-                img.onload = () => resolve(src); // It exists!
-                img.onerror = () => resolve(null); // Doesn't exist
+                img.onload = () => resolve(src);
+                img.onerror = () => resolve(null);
                 img.src = src;
             });
         };
 
-        // 4. Create a list of all potential paths and check them all in parallel
         for (let i = 1; i <= maxImagesToCheck; i++) {
             extensions.forEach(ext => {
                 imageCheckPromises.push(checkImage(`${folderPath}/${i}.${ext}`));
             });
         }
 
-        // 5. Wait for all checks to complete
         const results = await Promise.all(imageCheckPromises);
         const validSrcs = results.filter(src => src !== null);
 
-        // 6. Now render only the images we KNOW exist
         if (validSrcs.length > 0) {
-            const imageTags = validSrcs.map((src, index) => 
-                `<img src="${src}" class="modal-image ${index === 0 ? 'active' : ''}">`
+            // We render images WITHOUT the 'active' class initially
+            const imageTags = validSrcs.map((src) => 
+                `<img src="${src}" class="modal-image">`
             ).join('');
 
             const carousel = modalBody.querySelector('.image-carousel');
             carousel.innerHTML = imageTags;
-            carousel.style.justifyContent = "unset"; // Reset centering
+            carousel.style.justifyContent = "unset";
+
+            // Trigger the "Smooth Entry"
+            const images = carousel.querySelectorAll('.modal-image');
+            
+            // requestAnimationFrame ensures the browser has rendered the hidden images 
+            // before we tell it to fade the first one in.
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    images[0].classList.add('active'); 
+                });
+            });
 
             if (validSrcs.length > 1) {
                 let currentIndex = 0;
-                const images = carousel.querySelectorAll('.modal-image');
                 carouselInterval = setInterval(() => {
                     images[currentIndex].classList.remove('active');
                     currentIndex = (currentIndex + 1) % images.length;
                     images[currentIndex].classList.add('active');
-                }, 4000); // 4 seconds is a bit more stable for live sites
+                }, 4000); // Slightly slower interval for a more premium feel
             }
         } else {
-            // No images found? Hide the carousel box entirely
             const carousel = modalBody.querySelector('.image-carousel');
             if (carousel) carousel.style.display = 'none';
         }
