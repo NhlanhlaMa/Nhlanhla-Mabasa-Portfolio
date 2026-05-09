@@ -61,12 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const extensions = ['png', 'jpg', 'jpeg', 'webp'];
         const imageCheckPromises = [];
 
-        // Loading state
+        // Loading state // #475569;">Loading preview...</span>
         modalBody.innerHTML = `
             <h2>${data.title}</h2>
             <p style="color: #94a3b8; font-size: 0.95rem;">${data.desc}</p>
             <div class="image-carousel" style="display: flex; align-items: center; justify-content: center;">
-                <span style="color: #475569;">Preparing preview...</span>
+                <span style="color: #475569;"></span>
             </div>
         `;
 
