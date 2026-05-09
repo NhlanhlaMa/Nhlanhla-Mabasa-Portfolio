@@ -48,60 +48,77 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 3. Modal Logic
-    const openModal = (projectId) => {
+    const openModal = async (projectId) => {
         const data = projectDetails[projectId];
         if (!data) return;
 
         clearInterval(carouselInterval);
 
-        // 1. Generate the folder path based on the title
-        const folderPath = `images/${data.title}`;
+        // 1. URL-encode the title to handle spaces properly for GitHub Pages
+        const encodedTitle = encodeURIComponent(data.title);
+        const folderPath = `images/${encodedTitle}`;
         
-        // 2. Define how many images to check and which extensions to try
         const maxImagesToCheck = 10; 
         const extensions = ['png', 'jpg', 'jpeg', 'webp'];
-        let imageTags = '';
+        const imageCheckPromises = [];
 
-        // 3. Build image tags for all potential images
-        // We render them all, and the ones that don't exist will be removed by 'onerror'
-        for (let i = 1; i <= maxImagesToCheck; i++) {
-            extensions.forEach(ext => {
-                const fullPath = `${folderPath}/${i}.${ext}`;
-                imageTags += `<img src="${fullPath}" class="modal-image" onerror="this.remove()">`;
-            });
-        }
-
+        // 2. Clear previous content and show a subtle loading state
         modalBody.innerHTML = `
             <h2>${data.title}</h2>
             <p style="color: #94a3b8; font-size: 0.95rem;">${data.desc}</p>
-            <div class="image-carousel">
-                ${imageTags}
+            <div class="image-carousel" style="display: flex; align-items: center; justify-content: center;">
+                <span style="color: #475569;">Loading preview...</span>
             </div>
         `;
 
         modal.style.display = "block";
         document.body.style.overflow = "hidden";
 
-        // 4. Wait a split second for the browser to try loading images, then start carousel
-        setTimeout(() => {
-            const validImages = modalBody.querySelectorAll('.modal-image');
-            if (validImages.length > 0) {
-                validImages[0].classList.add('active'); // Set first valid image to active
-                
-                if (validImages.length > 1) {
-                    let currentIndex = 0;
-                    carouselInterval = setInterval(() => {
-                        validImages[currentIndex].classList.remove('active');
-                        currentIndex = (currentIndex + 1) % validImages.length;
-                        validImages[currentIndex].classList.add('active');
-                    }, 4000);
-                }
-            } else {
-                // Hide carousel if no images were found after the check
-                const carousel = modalBody.querySelector('.image-carousel');
-                if (carousel) carousel.style.display = 'none';
+        // 3. Helper function to check if an image actually exists
+        const checkImage = (src) => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(src); // It exists!
+                img.onerror = () => resolve(null); // Doesn't exist
+                img.src = src;
+            });
+        };
+
+        // 4. Create a list of all potential paths and check them all in parallel
+        for (let i = 1; i <= maxImagesToCheck; i++) {
+            extensions.forEach(ext => {
+                imageCheckPromises.push(checkImage(`${folderPath}/${i}.${ext}`));
+            });
+        }
+
+        // 5. Wait for all checks to complete
+        const results = await Promise.all(imageCheckPromises);
+        const validSrcs = results.filter(src => src !== null);
+
+        // 6. Now render only the images we KNOW exist
+        if (validSrcs.length > 0) {
+            const imageTags = validSrcs.map((src, index) => 
+                `<img src="${src}" class="modal-image ${index === 0 ? 'active' : ''}">`
+            ).join('');
+
+            const carousel = modalBody.querySelector('.image-carousel');
+            carousel.innerHTML = imageTags;
+            carousel.style.justifyContent = "unset"; // Reset centering
+
+            if (validSrcs.length > 1) {
+                let currentIndex = 0;
+                const images = carousel.querySelectorAll('.modal-image');
+                carouselInterval = setInterval(() => {
+                    images[currentIndex].classList.remove('active');
+                    currentIndex = (currentIndex + 1) % images.length;
+                    images[currentIndex].classList.add('active');
+                }, 4000); // 4 seconds is a bit more stable for live sites
             }
-        }, 100); // Small delay to let 'onerror' fire for missing files
+        } else {
+            // No images found? Hide the carousel box entirely
+            const carousel = modalBody.querySelector('.image-carousel');
+            if (carousel) carousel.style.display = 'none';
+        }
     };
 
     // Clear the interval when closing the modal
