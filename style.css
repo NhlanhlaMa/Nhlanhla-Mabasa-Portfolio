@@ -287,3 +287,70 @@ footer {
     margin-bottom: 1rem;
     color: var(--accent-blue);
 }
+
+/*---- Experience ----*/
+.experience-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.exp-item {
+    background: var(--glass-bg);
+    border-left: 2px solid var(--accent-blue);
+    padding: 1.5rem 2rem;
+    border-radius: 0 16px 16px 0;
+    transition: 0.3s;
+}
+
+.exp-item ul li strong {
+    color: var(--accent-blue); /* Optional: makes bolded words blue */
+    font-weight: 600;
+}
+
+.exp-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.exp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.exp-header h3 {
+    color: var(--text-light);
+    font-size: 1.3rem;
+}
+
+.exp-date {
+    color: var(--accent-blue);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.exp-company {
+    color: var(--accent-blue);
+    font-weight: 500;
+    margin-bottom: 1rem;
+    font-style: italic;
+}
+
+.exp-item ul {
+    list-style: none;
+    color: #94a3b8;
+}
+
+.exp-item ul li {
+    margin-bottom: 0.8rem;
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.exp-item ul li::before {
+    content: "▹";
+    position: absolute;
+    left: 0;
+    color: var(--accent-blue);
+}
