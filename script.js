@@ -147,3 +147,42 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target === modal) closeModal();
     };
 });
+
+document.querySelectorAll('.tilt-card').forEach(card => {
+    // Smooth entry configuration
+    card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+    card.style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), background 0.3s ease";
+
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        
+        // Calculate mouse position relative to the element (from 0 to width/height)
+        const x = e.clientX - rect.left; 
+        const y = e.clientY - rect.top;  
+
+        // Convert coordinates to a scale of -0.5 to 0.5
+        const xPercent = (x / rect.width) - 0.5;
+        const yPercent = (y / rect.height) - 0.5;
+
+        // Configure intensity (Degrees of maximum rotation)
+        const maxRotation = 12; 
+
+        // Calculate rotation angles (Notice: Y mouse position dictates X-axis rotation)
+        const rotateX = (-yPercent * maxRotation).toFixed(2);
+        const rotateY = (xPercent * maxRotation).toFixed(2);
+
+        // Apply 3D transform and subtle scale-up on hover
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        
+        // Update custom properties for the tracking light reflection
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+    });
+
+    // Reset card state smoothly when the mouse leaves
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+        card.style.setProperty('--mouse-x', `-999px`);
+        card.style.setProperty('--mouse-y', `-999px`);
+    });
+});
