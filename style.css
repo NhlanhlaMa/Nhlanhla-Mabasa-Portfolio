@@ -453,7 +453,7 @@ footer {
     height: 85vh; /* Adjusts how far down the landscape reaches */
     z-index: 1;    /* Keeps it behind the text content */
     
-    background-image: url('assets/hero-banner.png');
+    background-image: url('assets/hero-banner.webp');
     background-size: cover;
     background-position: center 25%;
     background-repeat: no-repeat;
